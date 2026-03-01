@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shipments Calculator</title>
+
+<style>
+
+body{
+font-family: Arial;
+background: linear-gradient(135deg,#0f2027,#2c5364);
+margin:0;
+padding:10px;
+}
+
+.container{
+background:white;
+max-width:500px;
+margin:auto;
+padding:15px;
+border-radius:15px;
+box-shadow:0 0 15px rgba(0,0,0,0.3);
+}
+
+h2{
+text-align:center;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+background:#2c5364;
+color:white;
+padding:10px;
+}
+
+td{
+padding:8px;
+text-align:center;
+}
+
+input{
+width:80px;
+padding:6px;
+font-size:16px;
+border-radius:5px;
+border:1px solid #ccc;
+}
+
+.totalbox{
+margin-top:15px;
+background:#f2f2f2;
+padding:10px;
+border-radius:10px;
+font-weight:bold;
+}
+
+.positive{
+color:green;
+font-weight:bold;
+}
+
+.negative{
+color:red;
+font-weight:bold;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+font-size:16px;
+font-weight:bold;
+color:white;
+cursor:pointer;
+}
+
+.sharebtn{
+background:#25D366;
+}
+
+.installbtn{
+background:#007bff;
+display:none;
+}
+
+.footer{
+text-align:center;
+margin-top:10px;
+color:gray;
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h2>📦 Shipments Calculator</h2>
+
+<table>
+
+<tr>
+<th>Area</th>
+<th>Ship</th>
+<th>Balance</th>
+</tr>
+
+<tr>
+<td>Chinnamanur</td>
+<td><input type="number" id="s1" oninput="calculate()"></td>
+<td id="b1">-</td>
+</tr>
+
+<tr>
+<td>UPM</td>
+<td><input type="number" id="s2" oninput="calculate()"></td>
+<td id="b2">-</td>
+</tr>
+
+<tr>
+<td>Gudalur</td>
+<td><input type="number" id="s3" oninput="calculate()"></td>
+<td id="b3">-</td>
+</tr>
+
+<tr>
+<td>KK Patty</td>
+<td><input type="number" id="s4" oninput="calculate()"></td>
+<td id="b4">-</td>
+</tr>
+
+<tr>
+<td>Cumbum (No Share)</td>
+<td><input type="number" id="s5" oninput="calculate()"></td>
+<td id="b5">-</td>
+</tr>
+
+</table>
+
+<div class="totalbox">
+Total Shipments: <span id="total">0</span><br>
+Equal Share (4 persons only): <span id="share">0</span>
+</div>
+
+<button class="sharebtn" onclick="shareWhatsApp()">Share to WhatsApp</button>
+
+<button class="installbtn" id="installBtn">Install App</button>
+
+<div class="footer">
+Created by Karthikeyan
+</div>
+
+</div>
+
+<script>
+
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt',(e)=>{
+e.preventDefault();
+deferredPrompt=e;
+document.getElementById("installBtn").style.display="block";
+});
+
+document.getElementById("installBtn").addEventListener("click",()=>{
+if(deferredPrompt){
+deferredPrompt.prompt();
+}
+});
+
+function getValue(id){
+return Number(document.getElementById(id).value)||0;
+}
+
+function calculate(){
+
+let s1=getValue("s1");
+let s2=getValue("s2");
+let s3=getValue("s3");
+let s4=getValue("s4");
+let s5=getValue("s5");
+
+let total=s1+s2+s3+s4+s5;
+
+// only first 4 share
+let share=Math.round(total/4);
+
+document.getElementById("total").innerText=total;
+document.getElementById("share").innerText=share;
+
+setBalance("b1",s1,share);
+setBalance("b2",s2,share);
+setBalance("b3",s3,share);
+setBalance("b4",s4,share);
+
+// cumbum no share
+document.getElementById("b5").innerText="-";
+
+}
+
+function setBalance(id,value,share){
+
+let el=document.getElementById(id);
+
+if(value==0){
+el.innerText="-";
+el.className="";
+return;
+}
+
+// reverse logic:
+// more shipment = minus
+// less shipment = plus
+
+let bal=share-value;
+
+let sign=bal>=0?"+":"";
+
+el.innerText=sign+bal;
+
+el.className=bal>=0?"positive":"negative";
+
+}
+
+function getBalance(value,share){
+
+if(value==0)return "-";
+
+let bal=share-value;
+
+let sign=bal>=0?"+":"";
+
+return sign+bal;
+
+}
+
+function shareWhatsApp(){
+
+let s1=getValue("s1");
+let s2=getValue("s2");
+let s3=getValue("s3");
+let s4=getValue("s4");
+let s5=getValue("s5");
+
+let total=s1+s2+s3+s4+s5;
+
+let share=Math.round(total/4);
+
+function row(name,value,include=true){
+
+let bal=include?getBalance(value,share):"-";
+
+return name.padEnd(12," ")+
+String(value).padEnd(7," ")+
+bal.padEnd(8," ");
+}
+
+let msg=
+"📦 SHIPMENTS REPORT\n\n"+
+
+"Area        Ship   Balance\n"+
+"-----------------------------\n"+
+
+row("Chinnamanur",s1,true)+"\n"+
+row("UPM",s2,true)+"\n"+
+row("Gudalur",s3,true)+"\n"+
+row("KK Patty",s4,true)+"\n"+
+row("Cumbum",s5,false)+"\n"+
+
+"-----------------------------\n"+
+
+"Total       "+total+"\n"+
+"Share(4)    "+share+"\n\n"+
+
+"Created by Karthikeyan";
+
+let url="https://wa.me/?text="+encodeURIComponent(msg);
+
+window.open(url,"_blank");
+
+}
+
+</script>
+
+</body>
+</html>
